@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const GLOBAL_EPOCH_MS = Date.UTC(2026, 0, 1, 0, 0, 0);
-const GLOBAL_BASE_METERS = 142_800;
+const GLOBAL_BASE_METERS = 371_000;
 const PERSONAL_TOTAL_KEY = "odo.web.totalMeters";
 const DEMO_METERS_PER_PIXEL = 0.000264583;
 const SLOT_MS = 30 * 60 * 1000;
@@ -174,7 +174,7 @@ export default function LiveOdometerDemo({ checkoutUrl, compact = false }: LiveO
           <div className="rounded-xl border border-line bg-white p-4">
             <p className="text-[11px] uppercase tracking-[0.14em] text-black/45">all visitors</p>
             <p className="display-font mt-1 text-3xl font-black text-ink">{formatDistance(state.totalMeters)}</p>
-            <p className="mt-1 text-xs text-black/45">fake global live meter</p>
+            <p className="mt-1 text-xs text-black/45">global meter</p>
           </div>
         </div>
       </div>
