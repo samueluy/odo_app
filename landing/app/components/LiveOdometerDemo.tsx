@@ -1,31 +1,48 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const GLOBAL_EPOCH_MS = Date.UTC(2026, 0, 1, 0, 0, 0);
 const GLOBAL_BASE_METERS = 142_800;
+const PERSONAL_TOTAL_KEY = "odo.web.totalMeters";
+const DEMO_METERS_PER_PIXEL = 0.000264583;
+const SLOT_MS = 30 * 60 * 1000;
+const SLOT_INCREMENT_MIN = 100;
+const SLOT_INCREMENT_MAX = 3000;
 
-// Monotonic synthetic model:
-// f(t) = base + minRate*t + a1*Integral(sin^2(t/w1)) + a2*Integral(sin^2(t/w2))
-// Derivative is always positive, so refreshes never move the counter backward.
-const MIN_RATE_MPS = 6.1;
-const BURST_AMP_1 = 3.2;
-const BURST_AMP_2 = 1.4;
-const BURST_WINDOW_1 = 780;
-const BURST_WINDOW_2 = 245;
+function hash32(value: number) {
+  let x = value >>> 0;
+  x ^= x >>> 16;
+  x = Math.imul(x, 0x45d9f3b);
+  x ^= x >>> 16;
+  x = Math.imul(x, 0x45d9f3b);
+  x ^= x >>> 16;
+  return x >>> 0;
+}
 
-function syntheticGlobalMeters(nowMs: number) {
-  const t = Math.max(0, (nowMs - GLOBAL_EPOCH_MS) / 1000);
+function slotIncrement(slotIndex: number) {
+  const seeded = hash32(slotIndex + 0x9e3779b9);
+  const range = SLOT_INCREMENT_MAX - SLOT_INCREMENT_MIN + 1;
+  return SLOT_INCREMENT_MIN + (seeded % range);
+}
 
-  const burst1 =
-    BURST_AMP_1 *
-    (t / 2 - (Math.sin((2 * t) / BURST_WINDOW_1) * BURST_WINDOW_1) / 4);
+function syntheticGlobalState(nowMs: number) {
+  const elapsed = Math.max(0, nowMs - GLOBAL_EPOCH_MS);
+  const completedSlots = Math.floor(elapsed / SLOT_MS);
 
-  const burst2 =
-    BURST_AMP_2 *
-    (t / 2 - (Math.sin((2 * t) / BURST_WINDOW_2) * BURST_WINDOW_2) / 4);
+  let totalMeters = GLOBAL_BASE_METERS;
+  for (let i = 0; i < completedSlots; i += 1) {
+    totalMeters += slotIncrement(i);
+  }
 
-  return GLOBAL_BASE_METERS + MIN_RATE_MPS * t + burst1 + burst2;
+  const nextUpdateAt = GLOBAL_EPOCH_MS + (completedSlots + 1) * SLOT_MS;
+  const lastIncrement = completedSlots > 0 ? slotIncrement(completedSlots - 1) : 0;
+
+  return {
+    totalMeters,
+    nextUpdateAt,
+    lastIncrement
+  };
 }
 
 function formatDistance(meters: number) {
@@ -45,21 +62,87 @@ type LiveOdometerDemoProps = {
 };
 
 export default function LiveOdometerDemo({ checkoutUrl, compact = false }: LiveOdometerDemoProps) {
-  const [globalMeters, setGlobalMeters] = useState(() => syntheticGlobalMeters(Date.now()));
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const localTotalRef = useRef(0);
+  const lastPaintRef = useRef(0);
+
+  const [state, setState] = useState(() => syntheticGlobalState(Date.now()));
+  const [personalMeters, setPersonalMeters] = useState(0);
+
+  useEffect(() => {
+    const savedTotal = Number(window.localStorage.getItem(PERSONAL_TOTAL_KEY) ?? 0);
+    if (Number.isFinite(savedTotal) && savedTotal > 0) {
+      localTotalRef.current = savedTotal;
+      setPersonalMeters(savedTotal);
+    }
+  }, []);
+
+  useEffect(() => {
+    function onPointerMove(event: MouseEvent) {
+      const current = { x: event.clientX, y: event.clientY };
+      const previous = lastPointRef.current;
+      lastPointRef.current = current;
+
+      if (!previous) {
+        return;
+      }
+
+      const dx = current.x - previous.x;
+      const dy = current.y - previous.y;
+      const pixelDistance = Math.hypot(dx, dy);
+
+      if (pixelDistance < 0.5) {
+        return;
+      }
+
+      localTotalRef.current += pixelDistance * DEMO_METERS_PER_PIXEL;
+      window.localStorage.setItem(PERSONAL_TOTAL_KEY, localTotalRef.current.toFixed(4));
+
+      const now = performance.now();
+      if (now - lastPaintRef.current > 120) {
+        lastPaintRef.current = now;
+        setPersonalMeters(localTotalRef.current);
+      }
+    }
+
+    function onPointerLeaveWindow(event: MouseEvent) {
+      if (event.relatedTarget) {
+        return;
+      }
+      lastPointRef.current = null;
+    }
+
+    window.addEventListener("mousemove", onPointerMove, { passive: true });
+    window.addEventListener("mouseout", onPointerLeaveWindow);
+
+    return () => {
+      window.removeEventListener("mousemove", onPointerMove);
+      window.removeEventListener("mouseout", onPointerLeaveWindow);
+    };
+  }, []);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setGlobalMeters(syntheticGlobalMeters(Date.now()));
-    }, 300);
+      setState(syntheticGlobalState(Date.now()));
+    }, 10_000);
 
     return () => {
       window.clearInterval(interval);
     };
   }, []);
 
+  const minutesToNext = useMemo(() => {
+    const remainingMs = Math.max(0, state.nextUpdateAt - Date.now());
+    return Math.ceil(remainingMs / 60000);
+  }, [state]);
+
   const subLabel = useMemo(() => {
-    return `Estimated live global mileage`; 
-  }, []);
+    if (state.lastIncrement <= 0) {
+      return `Starts jumping every 30 minutes (+100 to +3000 m each update)`;
+    }
+
+    return `Last jump: +${state.lastIncrement.toLocaleString()} m. Next jump in ~${minutesToNext} min.`;
+  }, [state.lastIncrement, minutesToNext]);
 
   if (compact) {
     return (
@@ -81,9 +164,18 @@ export default function LiveOdometerDemo({ checkoutUrl, compact = false }: LiveO
           </a>
         </div>
 
-        <div className="mt-4 rounded-xl border border-line bg-white p-4">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-black/45">all visitors</p>
-          <p className="display-font mt-1 text-3xl font-black text-ink">{formatDistance(globalMeters)}</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-line bg-white p-4">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-black/45">your odo</p>
+            <p className="display-font mt-1 text-3xl font-black text-ink">{formatDistance(personalMeters)}</p>
+            <p className="mt-1 text-xs text-black/45">browser cached total</p>
+          </div>
+
+          <div className="rounded-xl border border-line bg-white p-4">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-black/45">all visitors</p>
+            <p className="display-font mt-1 text-3xl font-black text-ink">{formatDistance(state.totalMeters)}</p>
+            <p className="mt-1 text-xs text-black/45">fake global live meter</p>
+          </div>
         </div>
       </div>
     );
@@ -113,10 +205,18 @@ export default function LiveOdometerDemo({ checkoutUrl, compact = false }: LiveO
           </a>
         </div>
 
-        <div className="mt-6 rounded-xl2 border border-line bg-white p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-black/45">all visitors</p>
-          <p className="display-font mt-2 text-4xl font-black text-ink md:text-5xl">{formatDistance(globalMeters)}</p>
-          <p className="mt-2 text-sm text-black/50">{subLabel}</p>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="rounded-xl2 border border-line bg-white p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-black/45">your odo</p>
+            <p className="display-font mt-2 text-4xl font-black text-ink md:text-5xl">{formatDistance(personalMeters)}</p>
+            <p className="mt-2 text-sm text-black/50">Browser cached personal total</p>
+          </div>
+
+          <div className="rounded-xl2 border border-line bg-white p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-black/45">all visitors</p>
+            <p className="display-font mt-2 text-4xl font-black text-ink md:text-5xl">{formatDistance(state.totalMeters)}</p>
+            <p className="mt-2 text-sm text-black/50">{subLabel}</p>
+          </div>
         </div>
       </div>
     </section>
