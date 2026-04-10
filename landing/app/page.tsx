@@ -187,24 +187,78 @@ export default function HomePage() {
       </section>
 
       <section className="container-shell pb-24">
-        <div className="rounded-[2rem] border border-line bg-white/70 p-4 shadow-soft backdrop-blur md:p-6">
-          <div className="mb-6 flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-black/45">Marketing Mockups</p>
-            <p className="text-xs text-black/45">Real screens from your latest set</p>
+        <div className="rounded-[2rem] border border-line bg-white/70 p-4 shadow-soft backdrop-blur md:p-5">
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-black/45">Actual App Preview</p>
+            <p className="text-xs text-black/45">What the real macOS app looks like</p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <article className="overflow-hidden rounded-xl2 border border-black/10 bg-white shadow-soft md:col-span-2">
-              <img src="/media/hero.png" alt="Odo hero mockup" className="w-full object-cover" loading="lazy" />
-            </article>
+          <div className="mx-auto w-full max-w-4xl rounded-[1rem] border border-black/10 bg-white p-2.5 shadow-card">
+            <div className="mb-2.5 flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+              <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+              <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+              <p className="ml-2 text-xs font-semibold text-black/55">Odo</p>
+            </div>
 
-            <article className="overflow-hidden rounded-xl2 border border-black/10 bg-white shadow-soft">
-              <img src="/media/howto.png" alt="Odo feature callout mockup" className="w-full object-cover" loading="lazy" />
-            </article>
+            <div className="space-y-2 rounded-xl border border-black/10 bg-white p-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img src="/odo_logo.png" alt="Odo" className="h-7 w-7 rounded-md" />
+                  <div>
+                    <p className="display-font text-xl font-black leading-none tracking-[0.08em] text-ink">ODO</p>
+                    <p className="text-sm font-semibold text-black/45">Gas is expensive. Your cursor isn't.</p>
+                  </div>
+                </div>
+                <p className="rounded-full bg-black/5 px-2.5 py-1 text-xs font-semibold text-black/50">TRACKING</p>
+              </div>
 
-            <article className="overflow-hidden rounded-xl2 border border-black/10 bg-white shadow-soft">
-              <img src="/media/thumb.png" alt="Odo product card mockup" className="w-full object-cover" loading="lazy" />
-            </article>
+              <div className="rounded-lg border border-black/10 bg-white p-2.5">
+                <p className="text-xs text-black/65">Track cursor distance with total and today readouts.</p>
+                <p className="text-xs text-black/65">Use comparisons to see your mileage stack up from 10 m to marathon scale.</p>
+                <p className="text-xs text-black/65">Still a stretch as productivity analytics, but at least gas is not involved.</p>
+              </div>
+
+              <div className="grid gap-2 md:grid-cols-2">
+                <div className="rounded-lg border border-[#8eb9ef] bg-white p-2.5">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-black/40">Total</p>
+                  <p className="mt-1 text-4xl font-black leading-none text-[#20252b]">42.532 <span className="text-xl font-bold text-black/45">km</span></p>
+                  <p className="mt-1 text-xs text-black/45">26.429 mi</p>
+                </div>
+                <div className="rounded-lg border border-[#f2c9a5] bg-white p-2.5">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-black/40">Today</p>
+                  <p className="mt-1 text-4xl font-black leading-none text-[#20252b]">503.43 <span className="text-xl font-bold text-black/45">m</span></p>
+                  <p className="mt-1 text-xs text-black/45">0.3128 mi</p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-[#9ec1ea] bg-white p-2.5">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-black/40">7-Day Trip Report</p>
+                <div className="mt-3 grid grid-cols-7 items-end gap-3 text-center text-xs font-semibold text-black/40">
+                  <div><div className="mx-auto mb-1 h-2 w-4 rounded bg-black/20" />Sat</div>
+                  <div><div className="mx-auto mb-1 h-2 w-4 rounded bg-black/20" />Sun</div>
+                  <div><div className="mx-auto mb-1 h-2 w-4 rounded bg-black/20" />Mon</div>
+                  <div><div className="mx-auto mb-1 h-2 w-4 rounded bg-black/20" />Tue</div>
+                  <div><div className="mx-auto mb-1 h-2 w-4 rounded bg-black/20" />Wed</div>
+                  <div><div className="mx-auto mb-1 h-20 w-4 rounded bg-black/30" />Thu</div>
+                  <div><div className="mx-auto mb-1 h-6 w-4 rounded bg-[#0f7be8]" />Fri</div>
+                </div>
+                <p className="mt-2 text-xs text-black/45">7-day total: 43.56 km</p>
+              </div>
+
+              <div className="rounded-lg border border-black/10 bg-white p-2.5">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-black/40">Distance Comparison</p>
+                <p className="mt-1.5 text-sm text-black/70">You cursored a marathon!</p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                <span className="font-semibold text-black/65">Units</span>
+                <span className="rounded-md bg-[#0f7be8] px-2.5 py-1 font-bold text-white">km</span>
+                <span className="rounded-md bg-black/5 px-2.5 py-1 font-semibold text-black/65">miles</span>
+                <span className="ml-2 rounded-md bg-black/5 px-2.5 py-1 font-semibold text-black/65">Pause</span>
+                <span className="ml-auto rounded-md bg-black/5 px-2.5 py-1 font-semibold text-black/65">Reset</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
