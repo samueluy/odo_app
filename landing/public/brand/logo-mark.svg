@@ -1,0 +1,13 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="odoMarkGradient" x1="64" y1="8" x2="64" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF9A3D"/>
+      <stop offset="1" stop-color="#F05E00"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="30" fill="url(#odoMarkGradient)"/>
+  <rect x="13" y="13" width="102" height="102" rx="26" stroke="white" stroke-opacity="0.22" stroke-width="2"/>
+  <circle cx="47" cy="50" r="6" fill="white"/>
+  <circle cx="81" cy="50" r="6" fill="white"/>
+  <path d="M42 76C47.8 83 55.2 86.5 64 86.5C72.8 86.5 80.2 83 86 76" stroke="white" stroke-width="6" stroke-linecap="round"/>
+</svg>

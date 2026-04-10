@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #121217;
+  --surface: #f3f3f4;
+  --haze: #e8e8eb;
+  --accent: #ff7a1a;
+  --accent-soft: #ffd7b8;
+  --line: #d8d8dc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-body), ui-sans-serif, system-ui;
+}
+
+h1,
+h2,
+h3,
+.display-font {
+  font-family: var(--font-display), ui-sans-serif, system-ui;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0) 98%, rgba(0, 0, 0, 0.03) 100%),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0) 98%, rgba(0, 0, 0, 0.03) 100%);
+  background-size: 24px 24px;
+}
+
+.container-shell {
+  width: min(1120px, 92vw);
+  margin: 0 auto;
+}
+
+.reveal {
+  opacity: 0;
+  animation: reveal 700ms ease forwards;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    animation: none;
+  }
+}
